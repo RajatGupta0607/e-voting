@@ -2,69 +2,138 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
-
-    @@index([name])
+// ENUMS for controlled vocabularies
+enum Role {
+  ADMIN
+  STUDENT
 }
 
-// Necessary for Next auth
+enum ElectionStatus {
+  PENDING           // Election is created but not yet open for candidature
+  CANDIDATURE_OPEN  // Students can apply to be a candidate
+  VOTING_OPEN       // Students can vote
+  CLOSED            // Voting has ended, results are available
+}
+
+enum CandidateStatus {
+  PENDING   // Candidate has applied, awaiting admin approval
+  APPROVED  // Admin has approved the candidate
+  REJECTED  // Admin has rejected the candidate
+}
+
+// Core application models
+model User {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  email             String    @unique
+  emailVerified     DateTime  @default(now())
+  image             String
+  
+  // Custom User Fields
+  role              Role      @default(STUDENT)
+  prn               String?   @unique // PRN number, unique for each student
+  course            String?   // e.g., "BCA", "BBA-IT"
+  year              Int?      // e.g., 1, 2, 3
+  division          String?   // e.g., "A", "B"
+  profileComplete   Boolean   @default(false) // Tracks if user has completed the initial setup
+
+  // Relations
+  accounts          Account[]
+  sessions          Session[]
+  votes             Vote[]
+  candidatures      Candidate[]
+}
+
+model Election {
+  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
+  name                String    // e.g., "Class Representative Election 2025"
+  course              String
+  year                Int
+  division            String
+  candidatureDeadline DateTime
+  votingStartDate     DateTime
+  votingEndDate       DateTime
+  status              ElectionStatus @default(PENDING)
+
+  // Relations
+  candidates          Candidate[]
+  votes               Vote[]
+
+  @@index([course, year, division])
+}
+
+model Candidate {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  manifesto   String
+  status      CandidateStatus @default(PENDING)
+  
+  // Relations
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+  electionId  String   @db.ObjectId
+  election    Election @relation(fields: [electionId], references: [id])
+  votes       Vote[]
+
+  @@unique([userId, electionId]) // A user can only be a candidate once per election
+}
+
+model Vote {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  votedAt     DateTime  @default(now())
+
+  // Relations
+  userId      String    @db.ObjectId
+  voter       User      @relation(fields: [userId], references: [id])
+  candidateId String    @db.ObjectId
+  candidate   Candidate @relation(fields: [candidateId], references: [id])
+  electionId  String    @db.ObjectId
+  election    Election  @relation(fields: [electionId], references: [id])
+
+  @@unique([userId, electionId]) // A user can only vote once per election
+}
+
+
+// NextAuth.js required models
 model Account {
-    id                       String  @id @default(cuid())
-    userId                   String
-    type                     String
-    provider                 String
-    providerAccountId        String
-    refresh_token            String? // @db.Text
-    access_token             String? // @db.Text
-    expires_at               Int?
-    token_type               String?
-    scope                    String?
-    id_token                 String? // @db.Text
-    session_state            String?
-    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-    refresh_token_expires_in Int?
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.String
+  access_token      String? @db.String
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.String
+  session_state     String?
 
-    @@unique([provider, providerAccountId])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
 }
 
 model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
-    posts         Post[]
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
 
-    @@unique([identifier, token])
+  @@unique([identifier, token])
 }
