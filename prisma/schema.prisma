@@ -8,7 +8,6 @@ generator client {
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
 }
 
 // ENUMS for controlled vocabularies
@@ -33,10 +32,10 @@ enum CandidateStatus {
 // Core application models
 model User {
   id                String    @id @default(auto()) @map("_id") @db.ObjectId
-  name              String
-  email             String    @unique
-  emailVerified     DateTime  @default(now())
-  image             String
+  name              String?
+  email             String?    @unique
+  emailVerified     DateTime?
+  image             String?
   
   // Custom User Fields
   role              Role      @default(STUDENT)

@@ -8,9 +8,9 @@ import {
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import { cn } from "~/lib/utils";
-import { signOut } from "~/server/auth";
 import SymbiLogo from "./Logo";
 import { api } from "~/trpc/react";
+import { signOut } from "next-auth/react";
 import Image from "next/image";
 import { Skeleton } from "./ui/skeleton";
 
@@ -48,7 +48,7 @@ export function DashboardLayout(props: Props) {
   return (
     <div
       className={cn(
-        "mx-auto flex w-full max-w-7xl flex-1 flex-col overflow-hidden rounded-md border border-neutral-200 bg-gray-100 md:flex-row dark:border-neutral-700 dark:bg-neutral-800",
+        "mx-auto flex w-full flex-1 flex-col overflow-hidden rounded-md border border-neutral-200 bg-gray-100 md:flex-row dark:border-neutral-700 dark:bg-neutral-800",
         "h-screen",
       )}
     >
@@ -69,6 +69,11 @@ export function DashboardLayout(props: Props) {
                   <Skeleton className="h-4 w-32 flex-shrink-0 rounded-sm"></Skeleton>
                 ) : (
                   (user.data?.name ?? "Unknown User")
+                ),
+                label2: user.isLoading ? (
+                  <Skeleton className="h-4 w-32 flex-shrink-0 rounded-sm"></Skeleton>
+                ) : (
+                  (user.data?.prn ?? "Unknown PRN")
                 ),
                 href: "#",
                 icon: user.isLoading ? (
@@ -103,7 +108,7 @@ export const Logo = () => {
         animate={{ opacity: 1 }}
         className="font-medium whitespace-pre text-black dark:text-white"
       >
-        Acet Labs
+        SICSR E-Voting
       </motion.span>
     </a>
   );

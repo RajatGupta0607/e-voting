@@ -6,7 +6,9 @@ import { IconMenu2, IconX } from "@tabler/icons-react";
 
 interface Links {
   label: string | React.JSX.Element | React.ReactNode;
+  label2?: string | React.JSX.Element | React.ReactNode;
   href: string;
+  onClick?: () => void;
   icon: React.JSX.Element | React.ReactNode;
 }
 
@@ -170,6 +172,7 @@ export const SidebarLink = ({
         "group/sidebar flex items-center justify-start gap-2 py-2",
         className,
       )}
+      onClick={link.onClick}
       {...props}
     >
       {link.icon}
@@ -182,6 +185,9 @@ export const SidebarLink = ({
         className="!m-0 inline-block !p-0 text-sm whitespace-pre text-neutral-700 transition duration-150 group-hover/sidebar:translate-x-1 dark:text-neutral-200"
       >
         {link.label}
+        <span className="block text-xs font-light text-neutral-500">
+          {link.label2}
+        </span>
       </motion.span>
     </a>
   );

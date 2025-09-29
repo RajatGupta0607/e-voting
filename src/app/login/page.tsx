@@ -1,9 +1,15 @@
 import Logo from "~/components/Logo";
-import { signIn } from "~/server/auth";
+import { auth, signIn } from "~/server/auth";
 import { IconBrandGoogle } from "@tabler/icons-react";
+import { redirect } from "next/navigation";
 
-async function SignupFormDemo() {
-  //Check session and redirect if already logged in
+async function SignupForm() {
+  const session = await auth();
+
+  if (session?.user) {
+    redirect("/dashboard");
+  }
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#fffce9] to-[#ffe8c2] text-white">
       <div className="shadow-input mx-auto w-full max-w-md rounded-none bg-white p-4 md:rounded-2xl md:p-8 dark:bg-black">
@@ -22,7 +28,7 @@ async function SignupFormDemo() {
           <form
             action={async () => {
               "use server";
-              await signIn("google", { callbackUrl: "/" });
+              await signIn("google", { redirectTo: "/", redirect: true });
             }}
           >
             <button
@@ -51,4 +57,4 @@ const BottomGradient = () => {
   );
 };
 
-export default SignupFormDemo;
+export default SignupForm;

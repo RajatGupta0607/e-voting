@@ -5,6 +5,10 @@ import { api, HydrateClient } from "~/trpc/server";
 export default async function Home() {
   const session = await auth();
 
+  if (!session?.user) {
+    redirect("/login");
+  }
+
   if (session?.user) {
     void api.user.getCurrentUser.prefetch();
   }
