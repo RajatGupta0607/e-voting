@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { DashboardLayout } from "~/components/DashboardLayout";
+import { DashboardLayout } from "./_components/DashboardLayout";
 import { auth } from "~/server/auth";
 
 export default async function RootLayout({
@@ -9,6 +9,10 @@ export default async function RootLayout({
 
   if (!session?.user) {
     redirect("/login");
+  }
+
+  if (!session.user.profileComplete) {
+    redirect("/login/complete-profile");
   }
 
   return (

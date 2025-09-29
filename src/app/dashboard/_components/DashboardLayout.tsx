@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar";
+import { Sidebar, SidebarBody, SidebarLink } from "~/components/ui/sidebar";
 import {
   IconArrowLeft,
   IconBrandTabler,
@@ -8,11 +8,11 @@ import {
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import { cn } from "~/lib/utils";
-import SymbiLogo from "./Logo";
+import SymbiLogo from "~/components/Logo";
 import { api } from "~/trpc/react";
 import { signOut } from "next-auth/react";
 import Image from "next/image";
-import { Skeleton } from "./ui/skeleton";
+import { Skeleton } from "~/components/ui/skeleton";
 
 interface Props {
   children: React.ReactNode;
