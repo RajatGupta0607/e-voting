@@ -3,6 +3,7 @@ import { cn } from "~/lib/utils";
 import React, { useState, createContext, useContext } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { IconMenu2, IconX } from "@tabler/icons-react";
+import Link from "next/link";
 
 interface Links {
   label: string | React.JSX.Element | React.ReactNode;
@@ -166,7 +167,7 @@ export const SidebarLink = ({
 }) => {
   const { open, animate } = useSidebar();
   return (
-    <a
+    <Link
       href={link.href}
       className={cn(
         "group/sidebar flex items-center justify-start gap-2 py-2",
@@ -189,6 +190,6 @@ export const SidebarLink = ({
           {link.label2}
         </span>
       </motion.span>
-    </a>
+    </Link>
   );
 };

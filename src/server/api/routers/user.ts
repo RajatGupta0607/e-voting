@@ -4,6 +4,8 @@ import { uploadSingleFile } from "~/helper/uploadFile";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
+const Years = ["All", "1", "2", "3"] as const;
+
 export const userRouter = createTRPCRouter({
   getCurrentUser: protectedProcedure.query(async ({ ctx }) => {
     try {
@@ -69,6 +71,62 @@ export const userRouter = createTRPCRouter({
         });
 
         return updatedUser;
+      } catch (error) {
+        throw new TRPCError({
+          message: (error as Error).message,
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    }),
+
+  getStudentsList: protectedProcedure
+    .input(
+      z.object({
+        searchQuery: z.string().optional(),
+        filterData: z.object({
+          course: z.string(),
+          year: z.enum(Years),
+          division: z.string(),
+        }),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const students = await ctx.db.user.findMany({
+          where: {
+            role: "STUDENT",
+            AND: [
+              {
+                name: {
+                  contains: input.searchQuery,
+                  mode: "insensitive",
+                },
+              },
+              {
+                course:
+                  input.filterData.course !== "All"
+                    ? input.filterData.course
+                    : undefined,
+              },
+              {
+                year:
+                  input.filterData.year !== "All"
+                    ? parseInt(input.filterData.year)
+                    : undefined,
+              },
+              {
+                division:
+                  input.filterData.division !== "All"
+                    ? input.filterData.division
+                    : undefined,
+              },
+            ],
+          },
+        });
+
+        if (!students) throw new Error("No Students found");
+
+        return students;
       } catch (error) {
         throw new TRPCError({
           message: (error as Error).message,

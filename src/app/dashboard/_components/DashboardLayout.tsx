@@ -5,6 +5,7 @@ import {
   IconArrowLeft,
   IconBrandTabler,
   IconUserBolt,
+  IconUserQuestion,
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import { cn } from "~/lib/utils";
@@ -20,7 +21,7 @@ interface Props {
 
 export function DashboardLayout(props: Props) {
   const user = api.user.getCurrentUser.useQuery();
-  const links = [
+  const studentsLinks = [
     {
       label: "Dashboard",
       href: "#",
@@ -29,10 +30,34 @@ export function DashboardLayout(props: Props) {
       ),
     },
     {
-      label: "Profile",
+      label: "Logout",
       href: "#",
+      onClick: () => signOut({ redirectTo: "/login" }),
+      icon: (
+        <IconArrowLeft className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+      ),
+    },
+  ];
+  const adminLinks = [
+    {
+      label: "Dashboard",
+      href: "/dashboard",
+      icon: (
+        <IconBrandTabler className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+      ),
+    },
+    {
+      label: "Students",
+      href: "/dashboard/students",
       icon: (
         <IconUserBolt className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+      ),
+    },
+    {
+      label: "Candidates",
+      href: "/dashboard/candidates",
+      icon: (
+        <IconUserQuestion className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
     },
     {
@@ -57,9 +82,16 @@ export function DashboardLayout(props: Props) {
           <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
             {open ? <Logo /> : <LogoIcon />}
             <div className="mt-8 flex flex-col gap-2">
-              {links.map((link, idx) => (
-                <SidebarLink key={idx} link={link} />
-              ))}
+              {user.isLoading && (
+                <Skeleton className="h-4 w-32 flex-shrink-0 rounded-sm"></Skeleton>
+              )}
+              {user.isLoading || user.data?.role === "ADMIN"
+                ? adminLinks.map((link, idx) => (
+                    <SidebarLink key={idx} link={link} />
+                  ))
+                : studentsLinks.map((link, idx) => (
+                    <SidebarLink key={idx} link={link} />
+                  ))}
             </div>
           </div>
           <div>
@@ -72,10 +104,12 @@ export function DashboardLayout(props: Props) {
                 ),
                 label2: user.isLoading ? (
                   <Skeleton className="h-4 w-32 flex-shrink-0 rounded-sm"></Skeleton>
+                ) : user.data?.role === "ADMIN" ? (
+                  (user.data.email ?? "Unknown Email")
                 ) : (
                   (user.data?.prn ?? "Unknown PRN")
                 ),
-                href: "#",
+                href: "/dashboard/profile",
                 icon: user.isLoading ? (
                   <Skeleton className="h-7 w-7 flex-shrink-0 rounded-full"></Skeleton>
                 ) : (
