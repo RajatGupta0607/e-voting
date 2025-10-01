@@ -188,4 +188,32 @@ export const electionRouter = createTRPCRouter({
         });
       }
     }),
+
+  getActiveElection: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      const user = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+      });
+
+      if (!user) throw new Error("User not found");
+
+      const election = await ctx.db.election.findFirst({
+        where: {
+          course: user.course!,
+          year: user.year!,
+          division: user.division!,
+          status: {
+            in: ["PENDING", "CANDIDATURE_OPEN", "VOTING_OPEN"],
+          },
+        },
+      });
+
+      return election;
+    } catch (error) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: (error as Error).message,
+      });
+    }
+  }),
 });
