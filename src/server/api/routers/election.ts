@@ -38,10 +38,7 @@ export const electionRouter = createTRPCRouter({
         });
 
         if (election) {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "Election already exists",
-          });
+          throw new Error("An active election already exists");
         }
 
         const newElection = await ctx.db.election.create({
@@ -58,10 +55,9 @@ export const electionRouter = createTRPCRouter({
 
         return newElection;
       } catch (er) {
-        console.error(er);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create election",
+          message: (er as Error).message,
         });
       }
     }),
@@ -114,10 +110,9 @@ export const electionRouter = createTRPCRouter({
 
         return elections;
       } catch (error) {
-        console.error(error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to list elections",
+          message: (error as Error).message,
         });
       }
     }),
@@ -157,10 +152,39 @@ export const electionRouter = createTRPCRouter({
 
         return election;
       } catch (er) {
-        console.error(er);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create election",
+          message: (er as Error).message,
+        });
+      }
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const election = await ctx.db.election.findUnique({
+          where: { id: input.id },
+        });
+
+        if (
+          election?.status === "VOTING_OPEN" ||
+          election?.status === "CLOSED"
+        ) {
+          throw new Error(
+            "Cannot delete election with status Voting Open or Closed",
+          );
+        }
+
+        const deletedElection = await ctx.db.election.delete({
+          where: { id: input.id },
+        });
+
+        return deletedElection;
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: (error as Error).message,
         });
       }
     }),

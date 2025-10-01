@@ -12,6 +12,8 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import ElectionUpdateSheet from "./ElectionUpdateSheet";
+import { api } from "~/trpc/react";
+import { toast } from "sonner";
 
 export const Status = {
   PENDING: "Pending",
@@ -35,6 +37,17 @@ function ElectionTableList({
     votingEndDate: Date;
   }[];
 }) {
+  const utils = api.useUtils();
+  const deleteElection = api.election.delete.useMutation({
+    onSuccess: async () => {
+      await utils.election.list.invalidate();
+      toast.success("Election deleted successfully");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
   return (
     <Table>
       <TableHeader>
@@ -71,6 +84,10 @@ function ElectionTableList({
                 variant="ghost"
                 size="sm"
                 className="cursor-pointer text-red-600"
+                onClick={async () =>
+                  await deleteElection.mutateAsync({ id: election.id })
+                }
+                loading={deleteElection.isPending}
               >
                 <IconTrash className="size-3" />
               </Button>
