@@ -1,7 +1,7 @@
 "use client";
 
 import type { $Enums } from "@prisma/client";
-import { IconEdit, IconTrash } from "@tabler/icons-react";
+import { IconTrash } from "@tabler/icons-react";
 import { Button } from "~/components/ui/button";
 import {
   Table,
@@ -11,8 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import ElectionUpdateSheet from "./ElectionUpdateSheet";
 
-const Status = {
+export const Status = {
   PENDING: "Pending",
   CANDIDATURE_OPEN: "Candidature Open",
   VOTING_OPEN: "Voting Open",
@@ -65,9 +66,7 @@ function ElectionTableList({
             </TableCell>
             <TableCell>{election.votingEndDate.toLocaleDateString()}</TableCell>
             <TableCell className="text-right">
-              <Button variant="ghost" size="sm" className="cursor-pointer">
-                <IconEdit className="size-3" />
-              </Button>
+              <ElectionUpdateSheet election={election} />
               <Button
                 variant="ghost"
                 size="sm"

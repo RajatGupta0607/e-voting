@@ -4,6 +4,12 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 const Years = ["All", "1", "2", "3"] as const;
+export const STATUS = [
+  "PENDING",
+  "CANDIDATURE_OPEN",
+  "VOTING_OPEN",
+  "CLOSED",
+] as const;
 
 export const electionRouter = createTRPCRouter({
   create: protectedProcedure
@@ -112,6 +118,49 @@ export const electionRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to list elections",
+        });
+      }
+    }),
+
+  update: protectedProcedure
+    .input(
+      z.object({
+        name: z.string(),
+        course: z.string(),
+        year: z.coerce.number(),
+        division: z.string(),
+        candidatureDeadline: z.coerce.date(),
+        votingStartDate: z.coerce.date(),
+        votingEndDate: z.coerce.date(),
+        status: z.enum(STATUS),
+        id: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      console.log(input);
+      try {
+        const election = await ctx.db.election.update({
+          where: {
+            id: input.id,
+          },
+          data: {
+            name: input.name,
+            course: input.course,
+            year: input.year,
+            division: input.division,
+            candidatureDeadline: input.candidatureDeadline,
+            votingStartDate: input.votingStartDate,
+            votingEndDate: input.votingEndDate,
+            status: input.status,
+          },
+        });
+
+        return election;
+      } catch (er) {
+        console.error(er);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create election",
         });
       }
     }),
