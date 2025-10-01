@@ -27,9 +27,9 @@ import { Button } from "~/components/ui/button";
 import { toast } from "sonner";
 import { redirect } from "next/navigation";
 
-const Courses = ["BCA", "BBA-IT", "MBA-IT", "MSc-CA"];
-const Years = ["1", "2", "3"];
-const Divisions = ["A", "B", "C", "D"];
+export const Courses = ["BCA", "BBA-IT", "MBA-IT", "MSc-CA"];
+export const Years = ["1", "2", "3"];
+export const Divisions = ["A", "B", "C", "D"];
 
 const fileSchema = z
   .custom<File>((val) => val instanceof File, {

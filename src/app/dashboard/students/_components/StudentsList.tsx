@@ -24,7 +24,6 @@ import { Button } from "~/components/ui/button";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -56,10 +55,10 @@ function StudentsList() {
     <div>
       <div className="flex items-end justify-between">
         <h1 className="text-5xl font-bold">Students</h1>
-        <div className="flex w-full max-w-md items-center gap-4">
+        <div className="flex w-fit items-center gap-4">
           <Input
             placeholder="Search"
-            className="h-[40px] w-[270px] border border-[#181818]"
+            className="h-[40px] w-[300px] border border-[#181818]"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -149,7 +148,7 @@ function StudentsList() {
             <Loader2 className="text-primary mr-2 h-9 w-9 animate-spin" />
           </div>
         ) : !data.data?.length ? (
-          <p className="w-full text-center">No Student Found</p>
+          <p className="mt-8 w-full text-center">No Student Found</p>
         ) : (
           <Table>
             <TableHeader>
@@ -164,7 +163,7 @@ function StudentsList() {
             </TableHeader>
             <TableBody>
               {data.data.map((student, i) => (
-                <TableRow className="cursor-pointer" key={i}>
+                <TableRow key={i}>
                   <TableCell>{student.name}</TableCell>
                   <TableCell>{student.prn}</TableCell>
                   <TableCell>{student.email}</TableCell>
