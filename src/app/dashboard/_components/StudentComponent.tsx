@@ -1,15 +1,19 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { Button } from "~/components/ui/button";
 import { api } from "~/trpc/react";
+import CandidateApplyDialog from "./CandidateApplyDialog";
 
 function StudentComponent() {
   const election = api.election.getActiveElection.useQuery();
+  const candidate = api.candidate.isCandidate.useQuery();
+  const totalApprovedCandidates = api.candidate.totalCandidate.useQuery();
 
   return (
     <div>
-      {election.isLoading ? (
+      {election.isLoading ||
+      candidate.isLoading ||
+      totalApprovedCandidates.isLoading ? (
         <div className="flex h-[70vh] w-full items-center justify-center">
           <Loader2 className="text-primary mr-2 h-9 w-9 animate-spin" />
         </div>
@@ -37,10 +41,25 @@ function StudentComponent() {
             {election.data.candidatureDeadline.toLocaleDateString()}
           </p>
           <p>All Eligible Candidates are encouraged to apply.</p>
-          <Button>Apply Now</Button>
+          {!candidate.data && <CandidateApplyDialog />}
+          {candidate.data?.status === "PENDING" && (
+            <p className="text-2xl font-bold text-blue-400">
+              Your application is pending approval.
+            </p>
+          )}
+          {candidate.data?.status === "REJECTED" && (
+            <p className="text-2xl font-bold text-red-400">
+              Your application has been rejected.
+            </p>
+          )}
+          {candidate.data?.status === "APPROVED" && (
+            <p className="text-2xl font-bold text-green-400">
+              Your application has been approved.
+            </p>
+          )}
           <h3>
             <span className="font-bold">Number of Accepted Applications:</span>{" "}
-            5
+            {totalApprovedCandidates.data}
           </h3>
           <p>For any queries, please contact the administration.</p>
         </div>
