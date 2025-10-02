@@ -4,6 +4,8 @@ import { uploadSingleFile } from "~/helper/uploadFile";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
+const Years = ["All", "1", "2", "3"] as const;
+
 export const candidateRouter = createTRPCRouter({
   createApplication: protectedProcedure
     .input(
@@ -154,4 +156,183 @@ export const candidateRouter = createTRPCRouter({
       });
     }
   }),
+
+  getAllPendingCandidates: protectedProcedure
+    .input(
+      z.object({
+        searchQuery: z.string().optional(),
+        filterData: z.object({
+          course: z.string(),
+          year: z.enum(Years),
+          division: z.string(),
+        }),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const candidates = await ctx.db.candidate.findMany({
+          where: {
+            status: "PENDING",
+            user: {
+              AND: [
+                {
+                  name: {
+                    contains: input.searchQuery,
+                    mode: "insensitive",
+                  },
+                },
+                input.filterData.course !== "All"
+                  ? { course: input.filterData.course }
+                  : {},
+                input.filterData.year !== "All"
+                  ? { year: parseInt(input.filterData.year) }
+                  : {},
+                input.filterData.division !== "All"
+                  ? { division: input.filterData.division }
+                  : {},
+              ],
+            },
+          },
+          include: {
+            user: true,
+          },
+        });
+
+        if (!candidates) throw new Error("No Candidates found");
+
+        return candidates;
+      } catch (error) {
+        throw new TRPCError({
+          message: (error as Error).message,
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    }),
+
+  getAllApprovedCandidates: protectedProcedure
+    .input(
+      z.object({
+        searchQuery: z.string().optional(),
+        filterData: z.object({
+          course: z.string(),
+          year: z.enum(Years),
+          division: z.string(),
+        }),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const candidates = await ctx.db.candidate.findMany({
+          where: {
+            status: "APPROVED",
+            user: {
+              AND: [
+                {
+                  name: {
+                    contains: input.searchQuery,
+                    mode: "insensitive",
+                  },
+                },
+                input.filterData.course !== "All"
+                  ? { course: input.filterData.course }
+                  : {},
+                input.filterData.year !== "All"
+                  ? { year: parseInt(input.filterData.year) }
+                  : {},
+                input.filterData.division !== "All"
+                  ? { division: input.filterData.division }
+                  : {},
+              ],
+            },
+          },
+          include: {
+            user: true,
+          },
+        });
+
+        if (!candidates) throw new Error("No Candidates found");
+
+        return candidates;
+      } catch (error) {
+        throw new TRPCError({
+          message: (error as Error).message,
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    }),
+
+  getAllRejectedCandidates: protectedProcedure
+    .input(
+      z.object({
+        searchQuery: z.string().optional(),
+        filterData: z.object({
+          course: z.string(),
+          year: z.enum(Years),
+          division: z.string(),
+        }),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const candidates = await ctx.db.candidate.findMany({
+          where: {
+            status: "REJECTED",
+            user: {
+              AND: [
+                {
+                  name: {
+                    contains: input.searchQuery,
+                    mode: "insensitive",
+                  },
+                },
+                input.filterData.course !== "All"
+                  ? { course: input.filterData.course }
+                  : {},
+                input.filterData.year !== "All"
+                  ? { year: parseInt(input.filterData.year) }
+                  : {},
+                input.filterData.division !== "All"
+                  ? { division: input.filterData.division }
+                  : {},
+              ],
+            },
+          },
+          include: {
+            user: true,
+          },
+        });
+
+        if (!candidates) throw new Error("No Candidates found");
+
+        return candidates;
+      } catch (error) {
+        throw new TRPCError({
+          message: (error as Error).message,
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    }),
+
+  updateCandidateStatus: protectedProcedure
+    .input(
+      z.object({
+        candidateId: z.string(),
+        status: z.enum(["APPROVED", "REJECTED"]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const updatedCandidate = await ctx.db.candidate.update({
+          where: { id: input.candidateId },
+          data: { status: input.status },
+        });
+
+        return updatedCandidate;
+      } catch (error) {
+        throw new TRPCError({
+          message: (error as Error).message,
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    }),
 });
