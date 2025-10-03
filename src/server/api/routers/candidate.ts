@@ -120,42 +120,42 @@ export const candidateRouter = createTRPCRouter({
     }
   }),
 
-  totalCandidate: protectedProcedure.query(async ({ ctx }) => {
-    try {
-      const user = await ctx.db.user.findUnique({
-        where: {
-          id: ctx.session.user.id,
-        },
-      });
+  // totalCandidate: protectedProcedure.query(async ({ ctx }) => {
+  //   try {
+  //     const user = await ctx.db.user.findUnique({
+  //       where: {
+  //         id: ctx.session.user.id,
+  //       },
+  //     });
 
-      if (!user) throw new Error("User not found");
+  //     if (!user) throw new Error("User not found");
 
-      const election = await ctx.db.election.findFirst({
-        where: {
-          course: user.course!,
-          year: user.year!,
-          division: user.division!,
-          status: "CANDIDATURE_OPEN",
-        },
-      });
+  //     const election = await ctx.db.election.findFirst({
+  //       where: {
+  //         course: user.course!,
+  //         year: user.year!,
+  //         division: user.division!,
+  //         status: "CANDIDATURE_OPEN",
+  //       },
+  //     });
 
-      if (!election) throw new Error("Election not found");
+  //     if (!election) throw new Error("Election not found");
 
-      const candidates = await ctx.db.candidate.findMany({
-        where: {
-          electionId: election.id,
-          status: "APPROVED",
-        },
-      });
+  //     const candidates = await ctx.db.candidate.findMany({
+  //       where: {
+  //         electionId: election.id,
+  //         status: "APPROVED",
+  //       },
+  //     });
 
-      return candidates.length;
-    } catch (error) {
-      throw new TRPCError({
-        message: (error as Error).message,
-        code: "INTERNAL_SERVER_ERROR",
-      });
-    }
-  }),
+  //     return candidates.length;
+  //   } catch (error) {
+  //     throw new TRPCError({
+  //       message: (error as Error).message,
+  //       code: "INTERNAL_SERVER_ERROR",
+  //     });
+  //   }
+  // }),
 
   getAllPendingCandidates: protectedProcedure
     .input(

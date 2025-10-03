@@ -2,7 +2,7 @@
 
 import type { $Enums } from "@prisma/client";
 import { IconTrash } from "@tabler/icons-react";
-import { Button } from "~/components/ui/button";
+import { Button, buttonVariants } from "~/components/ui/button";
 import {
   Table,
   TableBody,
@@ -14,6 +14,9 @@ import {
 import ElectionUpdateSheet from "./ElectionUpdateSheet";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
+import Link from "next/link";
 
 export const Status = {
   PENDING: "Pending",
@@ -37,6 +40,8 @@ function ElectionTableList({
     votingEndDate: Date;
   }[];
 }) {
+  const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+
   const utils = api.useUtils();
   const deleteElection = api.election.delete.useMutation({
     onSuccess: async () => {
@@ -78,18 +83,38 @@ function ElectionTableList({
               {election.votingStartDate.toLocaleDateString()}
             </TableCell>
             <TableCell>{election.votingEndDate.toLocaleDateString()}</TableCell>
-            <TableCell className="text-right">
+            <TableCell className="flex items-center justify-end text-right">
+              {(election.status === "VOTING_OPEN" ||
+                election.status === "CLOSED") && (
+                <Link
+                  href={`/dashboard/result/${election.id}`}
+                  className={buttonVariants({
+                    variant: "default",
+                    size: "sm",
+                    className: "mr-2",
+                  })}
+                >
+                  {election.status === "VOTING_OPEN"
+                    ? "View Voting"
+                    : "View Results"}
+                </Link>
+              )}
               <ElectionUpdateSheet election={election} />
               <Button
                 variant="ghost"
                 size="sm"
                 className="cursor-pointer text-red-600"
-                onClick={async () =>
-                  await deleteElection.mutateAsync({ id: election.id })
-                }
-                loading={deleteElection.isPending}
+                onClick={async () => {
+                  setDeleteLoading(election.id);
+                  await deleteElection.mutateAsync({ id: election.id });
+                  setDeleteLoading(null);
+                }}
               >
-                <IconTrash className="size-3" />
+                {deleteLoading === election.id ? (
+                  <Loader2 className="size-3 animate-spin" />
+                ) : (
+                  <IconTrash className="size-3" />
+                )}
               </Button>
             </TableCell>
           </TableRow>

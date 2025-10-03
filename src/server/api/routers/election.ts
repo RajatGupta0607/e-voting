@@ -206,6 +206,11 @@ export const electionRouter = createTRPCRouter({
             in: ["PENDING", "CANDIDATURE_OPEN", "VOTING_OPEN"],
           },
         },
+        include: {
+          candidates: {
+            include: { user: true },
+          },
+        },
       });
 
       return election;
@@ -216,4 +221,29 @@ export const electionRouter = createTRPCRouter({
       });
     }
   }),
+
+  getElection: protectedProcedure
+    .input(z.object({ electionId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const election = await ctx.db.election.findUnique({
+          where: { id: input.electionId },
+          include: {
+            candidates: {
+              include: { user: true, votes: true },
+            },
+            votes: true,
+          },
+        });
+
+        if (!election) throw new Error("Election not found");
+
+        return election;
+      } catch (error) {
+        throw new TRPCError({
+          message: (error as Error).message,
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    }),
 });
