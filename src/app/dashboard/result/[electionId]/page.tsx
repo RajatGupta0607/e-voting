@@ -20,6 +20,10 @@ async function Page({ params }: { params: Promise<{ electionId: string }> }) {
     redirect("/dashboard");
   }
 
+  const approvedCandidates = data.candidates.filter(
+    (c) => c.status === "APPROVED",
+  );
+
   const totalVotes = data.votes.length;
 
   return (
@@ -44,7 +48,7 @@ async function Page({ params }: { params: Promise<{ electionId: string }> }) {
       <div className="mt-5">
         <h2 className="text-3xl font-bold">Candidates</h2>
         <div className="mt-2 h-full overflow-auto">
-          {data.candidates.map((candidate) => (
+          {approvedCandidates.map((candidate) => (
             <div key={candidate.id} className="border-b py-2">
               <div className="flex items-center gap-3">
                 <Image
