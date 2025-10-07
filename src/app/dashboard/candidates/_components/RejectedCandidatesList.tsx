@@ -162,6 +162,7 @@ function RejectedCandidatesList() {
                 <TableHead>Course</TableHead>
                 <TableHead>Year</TableHead>
                 <TableHead>Division</TableHead>
+                <TableHead>Election Name</TableHead>
                 <TableHead>Manifesto</TableHead>
               </TableRow>
             </TableHeader>
@@ -183,6 +184,7 @@ function RejectedCandidatesList() {
                   <TableCell>{candidate.user.course}</TableCell>
                   <TableCell>{candidate.user.year}</TableCell>
                   <TableCell>{candidate.user.division}</TableCell>
+                  <TableCell>{candidate.election.name}</TableCell>
                   <TableCell>
                     <LinkPreview
                       url={candidate.manifesto}

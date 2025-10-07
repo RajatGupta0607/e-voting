@@ -195,6 +195,7 @@ export const candidateRouter = createTRPCRouter({
           },
           include: {
             user: true,
+            election: true,
           },
         });
 
@@ -247,6 +248,7 @@ export const candidateRouter = createTRPCRouter({
           },
           include: {
             user: true,
+            election: true,
           },
         });
 
@@ -299,6 +301,7 @@ export const candidateRouter = createTRPCRouter({
           },
           include: {
             user: true,
+            election: true,
           },
         });
 
